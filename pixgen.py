@@ -1,5 +1,35 @@
 from PIL import Image as pil_image
+from PIL import ImageColor as pil_color
 import math
+
+class Pallette():
+    def __init__(self):
+        self.palletes_hex = {}
+        self.palletes_rgb = {}
+        self.load_pallete("apollo.hex")
+
+    def load_pallete(self, filename):
+        file_name = filename
+
+        with open("palletes/" + file_name, "r") as pallete_file:
+            lines = pallete_file.readlines()
+            pallette = []
+            for line in lines:
+                pallette.append(line.replace("\n", ""))
+
+            self.palletes_hex[file_name.replace(".hex", "")] = pallette
+            self.palletes_rgb[file_name.replace(".hex", "")] = self.convert_hex_to_rgb_pallette(pallette)
+
+    def convert_hex_to_rgb_pallette(self, hex_pallette):
+        rgb_pallette = []
+
+        for hex in hex_pallette:
+            rgb_pallette.append(pil_color.getcolor("#" + hex, "RGB"))
+
+        return rgb_pallette
+
+    def find_match_from_rgb():
+        pass
 
 class Image():
 
@@ -84,12 +114,14 @@ class Image():
                 for i in range(step):
                     color_probe.append(image_px[x+i, y+i])
 
-                new_image = self.draw_sized_pixel(self.find_sized_pixel_rgb(color_probe), step, (x, y), new_image)
+                sized_pixel_rgb = self.find_sized_pixel_rgb(color_probe, pallette)
+                new_image = self.draw_sized_pixel(sized_pixel_rgb, step, (x, y), new_image)
                 color_probe.clear()
 
         self.save_image(new_image)    
 
 def main():
+    pallette = Pallette()
     my_image = Image("harjus.jpg")
     my_image.generate_pixel_art_from_image(resolution=164)
 
