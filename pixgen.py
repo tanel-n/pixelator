@@ -130,18 +130,19 @@ class Image():
 
         for y in range(0, self.image_y, step):
             for x in range(0, self.image_x, step):
-                for i in range(step):
-                    color_probe.append(image_px[x+i, y+i])
+                if ((self.image_x - step) > x) and ((self.image_y - step) > y):
+                    for i in range(step):
+                        color_probe.append(image_px[x+i, y+i])
 
-                sized_pixel_rgb = self.find_sized_pixel_rgb(color_probe, pallette, recolor=True)
-                new_image = self.draw_sized_pixel(sized_pixel_rgb, step, (x, y), new_image)
-                color_probe.clear()
+                    sized_pixel_rgb = self.find_sized_pixel_rgb(color_probe, pallette, recolor=True)
+                    new_image = self.draw_sized_pixel(sized_pixel_rgb, step, (x, y), new_image)
+                    color_probe.clear()
 
         self.save_image(new_image)    
 
 def main():
-    my_image = Image("harjus.jpg", verbose=True)
-    my_image.generate_pixel_art_from_image(resolution=164)
+    my_image = Image("jõeforell.jpg", verbose=True)
+    my_image.generate_pixel_art_from_image(resolution=148)
 
 
 if __name__ == "__main__":
