@@ -7,10 +7,12 @@ class Pallette():
     def __init__(self):
         self.hex_pallette = []
         self.rgb_pallette = []
-        self.load_pallete("apollo.hex")
+        self.palette_name = None
 
-    def load_pallete(self, filename):
-        file_name = filename
+        self.verbose = False
+
+    def load_pallete(self):
+        file_name = self.palette_name
 
         with open("palletes/" + file_name, "r") as pallete_file:
             lines = pallete_file.readlines()
@@ -41,7 +43,9 @@ class Pallette():
             if best_match[0] > delta_E:
                 best_match = [delta_E, pallette_colour]
         
-        print("RGB: " + str(rgb) + " best match: " + str(best_match[1]))
+        if self.verbose:
+            print("RGB: " + str(rgb) + " best match: " + str(best_match[1]))
+
         return best_match[1]
 
 class Image():
@@ -55,6 +59,10 @@ class Image():
         self.verbose = verbose
 
         self.pallette = Pallette()
+        if verbose:
+            self.pallette.verbose = True
+
+        self.colorise = False
 
     def open_image(self):
         image = pil_image.open(self.image_name)
@@ -69,6 +77,11 @@ class Image():
 
         image.save(new_name, "jpeg")
 
+    def set_palette(self, palette_name):
+        self.colorise = True
+        self.pallette.palette_name = palette_name
+        self.pallette.load_pallete()
+        
     def crop_to_last_sized_pixel(self, step, image_size:tuple, resolution):
         crop_x = image_size[0] % step // 2
         crop_y = image_size[1] % step // 2
@@ -94,7 +107,7 @@ class Image():
 
         return image
 
-    def find_sized_pixel_rgb(self, rgb_list:list, pallette, recolor=False):
+    def find_sized_pixel_rgb(self, rgb_list:list):
         red = 0
         green = 0
         blue = 0
@@ -110,14 +123,12 @@ class Image():
         blue = int(blue/n_rgb_values)
 
         rgb = (red, green, blue)
-        if recolor:
+        if self.colorise:
             rgb = self.pallette.find_match_from_pallette(rgb)
         
         return rgb
 
-    def generate_pixel_art_from_image(self, bit_depth=8, resolution=64):
-        pallette = "apollo"
-
+    def generate_pixel_art_from_image(self, resolution=64):
         step = int(math.sqrt(self.image_x**2 + self.image_y**2) // resolution)
 
         # crop image to fit integer number of pixels
@@ -134,7 +145,7 @@ class Image():
                     for i in range(step):
                         color_probe.append(image_px[x+i, y+i])
 
-                    sized_pixel_rgb = self.find_sized_pixel_rgb(color_probe, pallette, recolor=True)
+                    sized_pixel_rgb = self.find_sized_pixel_rgb(color_probe)
                     new_image = self.draw_sized_pixel(sized_pixel_rgb, step, (x, y), new_image)
                     color_probe.clear()
 
